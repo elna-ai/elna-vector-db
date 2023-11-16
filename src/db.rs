@@ -91,12 +91,14 @@ impl Collection {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Db {
     pub collections: HashMap<String, Collection>,
+    content: HashMap<String, String>,
 }
 
 impl Db {
     pub fn new() -> Self {
         Self {
             collections: HashMap::new(),
+            content: HashMap::new(),
         }
     }
 
@@ -126,7 +128,10 @@ impl Db {
     }
 
     pub fn delete_collection(&mut self, name: &str) -> Result<(), Error> {
-        if self.collections.remove(name).is_some() {
+        if let Some(collection) = self.collections.remove(name) {
+            collection.embeddings.iter().for_each(|embedding| {
+                let _ = self.remove_content(&embedding.id);
+            });
             Ok(())
         } else {
             Err(Error::NotFound)
@@ -140,10 +145,9 @@ impl Db {
     ) -> Result<(), Error> {
         let collection = self.collections.get_mut(name).ok_or(Error::NotFound)?;
 
-        // TODO: required?
-        // if collection.embeddings.iter().any(|e| e.id == embedding.id) {
-        // 	return Err(Error::UniqueViolation);
-        // }
+        if collection.embeddings.iter().any(|e| e.id == embedding.id) {
+            return Err(Error::UniqueViolation);
+        }
 
         if embedding.vector.len() != collection.dimension {
             return Err(Error::DimensionMismatch);
@@ -152,6 +156,22 @@ impl Db {
         embedding.vector = normalize(&embedding.vector);
         collection.embeddings.push(embedding);
         Ok(())
+    }
+
+    pub fn add_content(&mut self, id: String, content: String) -> Result<(), Error> {
+        if self.content.contains_key(&id) {
+            return Err(Error::UniqueViolation);
+        }
+
+        self.content.insert(id, content);
+        Ok(())
+    }
+
+    pub fn remove_content(&mut self, id: &str) -> Result<(), Error> {
+        match self.content.remove(id) {
+            None => Err(Error::NotFound),
+            Some(_) => Ok(()),
+        }
     }
 }
 
@@ -202,6 +222,21 @@ mod tests {
     }
 
     #[test]
+    fn delete_collection_with_embeddings() {
+        let mut db: Db = Db::new();
+        let _ = db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+        let embedding = Embedding {
+            id: "test-id".to_string(),
+            vector: vec![0.5, 1.3, 0.9, 5.0],
+            metadata: Some(HashMap::default()),
+        };
+        let _ = db.insert_into_collection("test", embedding);
+
+        assert_eq!(db.delete_collection("test"), Ok(()));
+        assert!(db.content.is_empty());
+    }
+
+    #[test]
     fn insert_into_collection() {
         let mut db: Db = Db::new();
         let _ = db.create_collection("test".to_string(), 4, crate::similarity::Distance::Cosine);
@@ -235,6 +270,36 @@ mod tests {
             metadata: Some(HashMap::default()),
         };
         let result = db.insert_into_collection("test", embedding);
+        assert_eq!(result, Err(Error::NotFound));
+    }
+
+    #[test]
+    fn add_content_to_db() {
+        let mut db: Db = Db::new();
+        let result = db.add_content("content-id".to_string(), "Some content".to_string());
+        assert_eq!(result.unwrap(), ());
+    }
+
+    #[test]
+    fn add_duplicate_content_to_db() {
+        let mut db: Db = Db::new();
+        let _ = db.add_content("content-id".to_string(), "Some content".to_string());
+        let result = db.add_content("content-id".to_string(), "Duplicate content".to_string());
+        assert_eq!(result, Err(Error::UniqueViolation));
+    }
+
+    #[test]
+    fn remove_existing_content_from_db() {
+        let mut db: Db = Db::new();
+        let _ = db.add_content("content-id".to_string(), "Some content".to_string());
+        let result = db.remove_content("content-id");
+        assert_eq!(result, Ok(()));
+    }
+
+    #[test]
+    fn remove_non_existing_content_from_db() {
+        let mut db: Db = Db::new();
+        let result = db.remove_content("non-existing-content-id");
         assert_eq!(result, Err(Error::NotFound));
     }
 }

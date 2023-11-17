@@ -2,67 +2,62 @@ pub mod db;
 pub mod similarity;
 
 use db::Db;
-use schemars::JsonSchema;
 
 use std::collections::HashMap;
 
 use crate::db::{Collection, Embedding};
 use crate::similarity::Distance;
 
-// fn get_embdding()->Embedding{
-
-//     // Creating a sample Embedding object
-//     let embedding = Embedding {
-//         id: String::from("sample_id"),
-//         vector: vec![1.0, 2.0, 3.0],
-//         metadata: Some({
-//             let mut metadata = HashMap::new();
-//             metadata.insert(String::from("key1"), String::from("value1"));
-//             metadata.insert(String::from("key2"), String::from("value2"));
-//             metadata
-//         }),
-//     };
-
-//     embedding
-
-// }
-
-fn get_collection(embedding: Embedding) -> Collection {
-    // Creating a sample Collection object
-    let collection = Collection {
-        dimension: 3,
-        distance: Distance::Cosine,
-        embeddings: vec![embedding],
-    };
-
-    collection
-}
 
 fn main() {
     let mut db: Db = Db::new();
     let created = db.create_collection("name".to_string(), 5, Distance::Cosine);
     println!("{:?}", created);
     println!("{:?}", db.get_collection("name"));
-    let created = db.create_collection("name".to_string(), 5, Distance::Cosine);
-    println!("{:?}", created);
 
-    // let embedding: Embedding = Embedding::new(
-    //     String::from("example_id"),
-    //     vec![1.0, 2.0, 3.0],
-    //     Some({
-    //         let mut metadata = HashMap::new();
-    //         metadata.insert(String::from("key1"), String::from("value1"));
-    //         metadata.insert(String::from("key2"), String::from("value2"));
-    //         metadata
-    //     }),
-    // );
-    // let query:[f32; 3]  = [5.0, 2.0, 3.0];
+    let embedding1: Embedding = Embedding::new(
+        String::from("example_id1"),
+        vec![1.0, 2.0, 3.0,6.0,5.0],
+        Some({
+            let mut metadata = HashMap::new();
+            metadata.insert(String::from("key1"), String::from("value1"));
+            metadata.insert(String::from("key2"), String::from("value2"));
+            metadata
+        }),
+    );
 
-    // println!("{:?}", embedding);
+    let embedding2: Embedding = Embedding::new(
+        String::from("example_id2"),
+        vec![1.0, 2.0, 3.0,4.0,5.0],
+        Some({
+            let mut metadata = HashMap::new();
+            metadata.insert(String::from("key1"), String::from("value1"));
+            metadata.insert(String::from("key2"), String::from("value2"));
+            metadata
+        }),
+    );
 
-    // let collection=get_collection(embedding);
+    let _ = db.insert_into_collection("name", embedding1);
+    let _ = db.insert_into_collection("name", embedding2);
+    let _ = db.add_content("example_id1".to_string(), "hello world".to_string());
+    let _ = db.add_content("example_id2".to_string(), "hello alex".to_string());
 
-    // println!("{:?}", collection);
+    // println!("{:?}",db.get_collection("name"));
+    let query:[f32; 5]  = [1.0, 2.0, 3.0,4.0,5.0];
 
-    // collection.get_similarity(&query,1)
+
+    let collection: Collection=db.get_collection("name").cloned().unwrap();
+
+    println!("{:?}", collection);
+
+    let similr=collection.get_similarity(&query,2);
+
+    println!("{:?}",similr);
+
+    for i in similr{
+        db.get_content(i.embedding.id);
+
+    }
+
+    
 }

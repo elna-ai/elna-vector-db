@@ -7,7 +7,7 @@ use crate::similarity::{get_cache_attr, get_distance_fn, normalize, Distance, Sc
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, JsonSchema)]
 pub struct SimilarityResult {
     score: f32,
-    embedding: Embedding,
+    pub embedding: Embedding,
 }
 
 #[derive(Debug, thiserror::Error, PartialEq)]
@@ -84,6 +84,7 @@ impl Collection {
 			})
 			.collect()
 	}
+
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -163,6 +164,15 @@ impl Db {
 
         self.content.insert(id, content);
         Ok(())
+    }
+
+    pub fn get_content(&self,id:String){
+
+        let content=self.content.get(&id);
+
+        println!("{:?}",content);
+
+
     }
 
     pub fn remove_content(&mut self, id: &str) -> Result<(), Error> {
@@ -299,5 +309,14 @@ mod tests {
         let mut db: Db = Db::new();
         let result = db.remove_content("non-existing-content-id");
         assert_eq!(result, Err(Error::NotFound));
+    }
+
+    #[test]
+    fn get_content() {
+        let mut db = Db::new();
+        let _ = db.add_content("content-id".to_string(), "Some content".to_string());
+        let content=db.get_content("content-id".to_string());
+        println!("{:?}",content);
+
     }
 }

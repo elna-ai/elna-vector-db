@@ -8,6 +8,10 @@ use std::collections::HashMap;
 use crate::db::{Collection, Embedding};
 use crate::similarity::Distance;
 
+#[ic_cdk::query]
+fn test_welcome(name: String) -> String {
+    format!("Machan, {}", name)
+}
 
 fn main() {
     let mut db: Db = Db::new();
@@ -17,7 +21,7 @@ fn main() {
 
     let embedding1: Embedding = Embedding::new(
         String::from("example_id1"),
-        vec![1.0, 2.0, 3.0,6.0,5.0],
+        vec![1.0, 2.0, 3.0, 6.0, 5.0],
         Some({
             let mut metadata = HashMap::new();
             metadata.insert(String::from("key1"), String::from("value1"));
@@ -28,7 +32,7 @@ fn main() {
 
     let embedding2: Embedding = Embedding::new(
         String::from("example_id2"),
-        vec![1.0, 2.0, 3.0,4.0,5.0],
+        vec![1.0, 2.0, 3.0, 4.0, 5.0],
         Some({
             let mut metadata = HashMap::new();
             metadata.insert(String::from("key1"), String::from("value1"));
@@ -43,21 +47,17 @@ fn main() {
     let _ = db.add_content("example_id2".to_string(), "hello alex".to_string());
 
     // println!("{:?}",db.get_collection("name"));
-    let query:[f32; 5]  = [1.0, 2.0, 3.0,4.0,5.0];
+    let query: [f32; 5] = [1.0, 2.0, 3.0, 4.0, 5.0];
 
-
-    let collection: Collection=db.get_collection("name").cloned().unwrap();
+    let collection: Collection = db.get_collection("name").cloned().unwrap();
 
     println!("{:?}", collection);
 
-    let similr=collection.get_similarity(&query,2);
+    let similar = collection.get_similarity(&query, 2);
 
-    println!("{:?}",similr);
+    println!("{:?}", similar);
 
-    for i in similr{
+    for i in similar {
         db.get_content(i.embedding.id);
-
     }
-
-    
 }

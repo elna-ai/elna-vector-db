@@ -1,0 +1,17 @@
+{
+  "canisters": {
+    "ic_vector_db": {
+      "candid": "src/ic_vector_db.did",
+      "package": "ic_vector_db",
+      "type": "rust"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

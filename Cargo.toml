@@ -1,5 +1,5 @@
 [package]
-name = "ic_vector"
+name = "ic_vector_db"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,6 +10,7 @@ schemars = "0.8.12"
 serde = "1.0.165"
 thiserror = "1.0.40"
 rayon = "1.7.0"
-
+candid = "0.8"
+ic-cdk = "0.7"
 
 

@@ -1,11 +1,14 @@
 pub mod db;
 pub mod similarity;
+pub mod collection;
+pub mod embedding;
 
 use db::Db;
 
 use std::collections::HashMap;
 
-use crate::db::{Collection, Embedding};
+use crate::collection::Collection;
+use crate::embedding::Embedding;
 use crate::similarity::Distance;
 
 #[ic_cdk::query]

@@ -1,4 +1,3 @@
-// mod collection;
 pub mod database;
 
 use database::{collection::Collection, db::Database, db::Error, similarity::Distance};
@@ -11,11 +10,6 @@ thread_local! {
     static DB:RefCell<Database> = RefCell::new(Database::new())
 
 }
-
-// #[init]
-// fn init() {
-//     ic_cdk::println!("Db initialized...");
-// }
 
 #[query]
 fn get_collection(name: String) -> Option<Collection> {
@@ -33,5 +27,16 @@ fn create_collection(name: String, dimension: usize) -> Result<Collection, Error
     })
 }
 
+#[pre_upgrade]
+fn pre_upgrade() {
+    let db: Database = DB.with(|db| mem::take(&mut *db.borrow_mut()));
+    stable_save((db,)).expect("Unable to store db in pre_upgrade")
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    let (db,) = stable_restore().unwrap();
+    DB.with(|db_new| *db_new.borrow_mut() = db)
+}
 
 export_candid!();

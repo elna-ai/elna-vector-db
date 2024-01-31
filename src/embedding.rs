@@ -1,7 +1,8 @@
+use candid::CandidType;
 use schemars::JsonSchema;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, JsonSchema, PartialEq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, JsonSchema, PartialEq, CandidType)]
 pub struct Embedding {
     pub id: String,
     pub vector: Vec<f32>,

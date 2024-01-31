@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
+use candid::CandidType;
+
 use crate::similarity::{normalize, Distance};
 
-use crate::embedding::Embedding;
 use crate::collection::Collection;
+use crate::embedding::Embedding;
 
-
-
-#[derive(Debug, thiserror::Error, PartialEq)]
+#[derive(Debug, thiserror::Error, PartialEq, CandidType)]
 pub enum Error {
     #[error("Collection already exists")]
     UniqueViolation,
@@ -98,13 +98,10 @@ impl Db {
         Ok(())
     }
 
-    pub fn get_content(&self,id:String){
+    pub fn get_content(&self, id: String) {
+        let content = self.content.get(&id);
 
-        let content=self.content.get(&id);
-
-        println!("{:?}",content);
-
-
+        println!("{:?}", content);
     }
 
     pub fn remove_content(&mut self, id: &str) -> Result<(), Error> {
@@ -247,8 +244,7 @@ mod tests {
     fn get_content() {
         let mut db = Db::new();
         let _ = db.add_content("content-id".to_string(), "Some content".to_string());
-        let content=db.get_content("content-id".to_string());
-        println!("{:?}",content);
-
+        let content = db.get_content("content-id".to_string());
+        println!("{:?}", content);
     }
 }

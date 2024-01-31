@@ -27,6 +27,14 @@ fn create_collection(name: String, dimension: usize) -> Result<Collection, Error
     })
 }
 
+#[update]
+fn delete_collection(name: String) -> Result<(), Error> {
+    DB.with(|db| {
+        let mut db = db.borrow_mut();
+        db.delete_collection(&name)
+    })
+}
+
 #[pre_upgrade]
 fn pre_upgrade() {
     let db: Database = DB.with(|db| mem::take(&mut *db.borrow_mut()));

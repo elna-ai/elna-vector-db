@@ -9,4 +9,9 @@ type Embedding = record {
   metadata : opt vec record { text; text };
   vector : vec float32;
 };
-service : { get_collection : (text) -> (opt Collection) query }
+type Error = variant { UniqueViolation; DimensionMismatch; NotFound };
+type Result = variant { Ok : Collection; Err : Error };
+service : {
+  create_collection : (text, nat64) -> (Result);
+  get_collection : (text) -> (opt Collection) query;
+}

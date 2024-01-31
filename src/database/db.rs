@@ -19,7 +19,7 @@ pub enum Error {
     DimensionMismatch,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, CandidType, Default)]
 pub struct Database {
     pub collections: HashMap<String, Collection>,
     content: HashMap<String, String>,
@@ -120,15 +120,14 @@ mod tests {
     #[test]
     fn create_collection() {
         let mut db: Database = Database::new();
-        let result =
-            db.create_collection("test".to_string(), 10, super::Distance::Cosine);
+        let result = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         assert!(result.is_ok())
     }
 
     #[test]
     fn get_collection() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 10,  super::Distance::Cosine);
+        let _ = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         let result = db.get_collection("test");
         assert!(result.is_some())
     }
@@ -137,8 +136,7 @@ mod tests {
     fn create_duplicate_collection() {
         let mut db: Database = Database::new();
         let _ = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
-        let result =
-            db.create_collection("test".to_string(), 10, super::Distance::Cosine);
+        let result = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         let expected = Err(Error::UniqueViolation);
         assert_eq!(result, expected);
     }

@@ -1,8 +1,8 @@
 {
   "canisters": {
     "ic_vector_db": {
-      "candid": "src/ic_vector_db.did",
-      "package": "ic_vector_db",
+      "candid": "elna_vector_db.did",
+      "package": "elna_vector_db",
       "type": "rust"
     }
   },

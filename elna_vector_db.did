@@ -1,0 +1,12 @@
+type Collection = record {
+  distance : Distance;
+  dimension : nat64;
+  embeddings : vec Embedding;
+};
+type Distance = variant { dot; euclidean; cosine };
+type Embedding = record {
+  id : text;
+  metadata : opt vec record { text; text };
+  vector : vec float32;
+};
+service : { get_collection : (text) -> (opt Collection) query }

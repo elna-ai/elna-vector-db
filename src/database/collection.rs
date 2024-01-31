@@ -1,8 +1,8 @@
-use crate::embedding::Embedding;
+use super::embedding::Embedding;
 use candid::CandidType;
 use rayon::prelude::*;
 
-use crate::similarity::{get_cache_attr, get_distance_fn, Distance, ScoreIndex};
+use super::similarity::{get_cache_attr, get_distance_fn, Distance, ScoreIndex};
 use schemars::JsonSchema;
 use std::collections::BinaryHeap;
 

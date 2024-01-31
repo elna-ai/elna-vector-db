@@ -1,26 +1,23 @@
-pub mod collection;
-pub mod db;
-pub mod embedding;
-pub mod similarity;
+// mod collection;
+pub mod database;
 
-use candid::{candid_method, export_service};
-use collection::Collection;
-use db::Db;
-use ic_cdk::{init, query};
+use database::{db::Database,collection::Collection};
+// use ic_cdk::{init, query};
 use std::cell::RefCell;
 
+use ic_cdk_macros::{query,export_candid};
+
 thread_local! {
-    static DB:RefCell<Db> = RefCell::new(Db::new())
+    static DB:RefCell<Database> = RefCell::new(Database::new())
 
 }
 
-#[init]
-fn init() {
-    ic_cdk::println!("Db initialized...");
-}
+// #[init]
+// fn init() {
+//     ic_cdk::println!("Db initialized...");
+// }
 
 #[query]
-#[candid_method(query)]
 fn get_collection(name: String) -> Option<Collection> {
     DB.with(|db| {
         let db = db.borrow();
@@ -37,8 +34,11 @@ fn get_collection(name: String) -> Option<Collection> {
 //     })
 // }
 
-#[query(name = "__get_candid_interface_tmp_hack")]
-fn export_candid() -> String {
-    export_service!();
-    __export_service()
-}
+// #[query(name = "__get_candid_interface_tmp_hack")]
+// fn export_candid() -> String {
+//     export_service!();
+//     __export_service()
+// }
+
+
+export_candid!();

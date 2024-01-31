@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use candid::CandidType;
 
-use crate::similarity::{normalize, Distance};
+use super::similarity::{normalize, Distance};
 
-use crate::collection::Collection;
-use crate::embedding::Embedding;
+use super::collection::Collection;
+use super::embedding::Embedding;
 
 #[derive(Debug, thiserror::Error, PartialEq, CandidType)]
 pub enum Error {
@@ -20,12 +20,12 @@ pub enum Error {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct Db {
+pub struct Database {
     pub collections: HashMap<String, Collection>,
     content: HashMap<String, String>,
 }
 
-impl Db {
+impl Database {
     pub fn new() -> Self {
         Self {
             collections: HashMap::new(),
@@ -114,54 +114,54 @@ impl Db {
 
 #[cfg(test)]
 mod tests {
-    use super::{Db, Embedding, Error};
+    use super::{Database, Embedding, Error};
     use std::collections::HashMap;
 
     #[test]
     fn create_collection() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let result =
-            db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+            db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         assert!(result.is_ok())
     }
 
     #[test]
     fn get_collection() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 10,  super::Distance::Cosine);
         let result = db.get_collection("test");
         assert!(result.is_some())
     }
 
     #[test]
     fn create_duplicate_collection() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         let result =
-            db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+            db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         let expected = Err(Error::UniqueViolation);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn delete_existing_collection() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
 
         assert_eq!(db.delete_collection("test"), Ok(()))
     }
 
     #[test]
     fn delete_non_existing_collection() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
 
         assert_eq!(db.delete_collection("test"), Err(Error::NotFound))
     }
 
     #[test]
     fn delete_collection_with_embeddings() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 10, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 10, super::Distance::Cosine);
         let embedding = Embedding {
             id: "test-id".to_string(),
             vector: vec![0.5, 1.3, 0.9, 5.0],
@@ -175,8 +175,8 @@ mod tests {
 
     #[test]
     fn insert_into_collection() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 4, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 4, super::Distance::Cosine);
         let embedding = Embedding {
             id: "test-id".to_string(),
             vector: vec![0.5, 1.3, 0.9, 5.0],
@@ -187,8 +187,8 @@ mod tests {
     }
     #[test]
     fn insert_into_collection_dimensions_mismatch() {
-        let mut db: Db = Db::new();
-        let _ = db.create_collection("test".to_string(), 4, crate::similarity::Distance::Cosine);
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 4, super::Distance::Cosine);
         let embedding = Embedding {
             id: "test-id".to_string(),
             vector: vec![0.5, 1.3, 0.9],
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn insert_into_non_existing_collection() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let embedding = Embedding {
             id: "test-id".to_string(),
             vector: vec![0.5, 1.3, 0.9],
@@ -212,14 +212,14 @@ mod tests {
 
     #[test]
     fn add_content_to_db() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let result = db.add_content("content-id".to_string(), "Some content".to_string());
         assert_eq!(result.unwrap(), ());
     }
 
     #[test]
     fn add_duplicate_content_to_db() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let _ = db.add_content("content-id".to_string(), "Some content".to_string());
         let result = db.add_content("content-id".to_string(), "Duplicate content".to_string());
         assert_eq!(result, Err(Error::UniqueViolation));
@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn remove_existing_content_from_db() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let _ = db.add_content("content-id".to_string(), "Some content".to_string());
         let result = db.remove_content("content-id");
         assert_eq!(result, Ok(()));
@@ -235,14 +235,14 @@ mod tests {
 
     #[test]
     fn remove_non_existing_content_from_db() {
-        let mut db: Db = Db::new();
+        let mut db: Database = Database::new();
         let result = db.remove_content("non-existing-content-id");
         assert_eq!(result, Err(Error::NotFound));
     }
 
     #[test]
     fn get_content() {
-        let mut db = Db::new();
+        let mut db = Database::new();
         let _ = db.add_content("content-id".to_string(), "Some content".to_string());
         let content = db.get_content("content-id".to_string());
         println!("{:?}", content);

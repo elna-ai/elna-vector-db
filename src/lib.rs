@@ -4,7 +4,7 @@ use database::{collection::Collection, db::Database, db::Error, similarity::Dist
 use ic_cdk::storage::{stable_restore, stable_save};
 use std::{cell::RefCell, mem};
 
-use ic_cdk_macros::{export_candid, post_upgrade, pre_upgrade, query, update};
+use ic_cdk::{export_candid, post_upgrade, pre_upgrade, query, update};
 
 thread_local! {
     static DB:RefCell<Database> = RefCell::new(Database::new())

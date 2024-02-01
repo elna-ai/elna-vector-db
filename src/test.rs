@@ -1,9 +1,4 @@
-pub mod db;
-pub mod similarity;
-pub mod collection;
-pub mod embedding;
-
-use db::Db;
+use database::Database;
 
 use std::collections::HashMap;
 
@@ -17,7 +12,7 @@ fn test_welcome(name: String) -> String {
 }
 
 fn main() {
-    let mut db: Db = Db::new();
+    let mut db: Database = Database::new();
     let created = db.create_collection("name".to_string(), 5, Distance::Cosine);
     println!("{:?}", created);
     println!("{:?}", db.get_collection("name"));

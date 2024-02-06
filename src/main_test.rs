@@ -1,10 +1,13 @@
-use database::Database;
+mod database;
+mod hnsw;
+
+use database::db::Database;
 
 use std::collections::HashMap;
 
-use crate::collection::Collection;
-use crate::embedding::Embedding;
-use crate::similarity::Distance;
+use database::collection::Collection;
+use database::embedding::Embedding;
+use database::similarity::Distance;
 
 #[ic_cdk::query]
 fn test_welcome(name: String) -> String {

@@ -2,8 +2,9 @@ use super::{collection, index::{Vector, generate_index}};
 use instant_distance::{HnswMap, Search};
 use std::collections::{btree_map::Keys, HashMap};
 use crate::hnsw::collection::Collection;
+use candid::CandidType;
 
-#[derive(Debug, thiserror::Error, PartialEq)]
+#[derive(Debug, thiserror::Error, PartialEq, CandidType)]
 pub enum Error {
     #[error("Collection already exists")]
     UniqueViolation,

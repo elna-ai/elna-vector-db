@@ -1,4 +1,3 @@
-pub mod collection;
 pub mod db;
-pub mod embedding;
-pub mod similarity;
+pub mod index;
+pub mod collection;

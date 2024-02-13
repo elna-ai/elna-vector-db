@@ -1,6 +1,7 @@
-pub mod hnsw;
+pub mod database;
+pub mod config;
 
-use hnsw::database::{Database,Error};
+use database::db::{Database,Error};
 use ic_cdk::{export_candid, query, update};
 
 

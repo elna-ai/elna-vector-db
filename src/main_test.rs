@@ -1,64 +1,37 @@
 mod database;
-mod hnsw;
-
+mod config;
 use database::db::Database;
 
-use std::collections::HashMap;
+// use std::cell::RefCell;
 
-use database::collection::Collection;
-use database::embedding::Embedding;
-use database::similarity::Distance;
 
-#[ic_cdk::query]
-fn test_welcome(name: String) -> String {
-    format!("Machan, {}", name)
-}
+// thread_local! {
+//     static DB:RefCell<Database> = RefCell::new(Database::new())
 
-fn main() {
+// }
+
+fn main(){
+
     let mut db: Database = Database::new();
-    let created = db.create_collection("name".to_string(), 5, Distance::Cosine);
+    let created = db.create_collection("name".to_string(), 3);
     println!("{:?}", created);
-    println!("{:?}", db.get_collection("name"));
+    let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+    let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+    let result=db.insert_into_collection("name", keys, values);
 
-    let embedding1: Embedding = Embedding::new(
-        String::from("example_id1"),
-        vec![1.0, 2.0, 3.0, 6.0, 5.0],
-        Some({
-            let mut metadata = HashMap::new();
-            metadata.insert(String::from("key1"), String::from("value1"));
-            metadata.insert(String::from("key2"), String::from("value2"));
-            metadata
-        }),
-    );
+    println!("{:?}",result);
+    let _ = db.build_index("name");
 
-    let embedding2: Embedding = Embedding::new(
-        String::from("example_id2"),
-        vec![1.0, 2.0, 3.0, 4.0, 5.0],
-        Some({
-            let mut metadata = HashMap::new();
-            metadata.insert(String::from("key1"), String::from("value1"));
-            metadata.insert(String::from("key2"), String::from("value2"));
-            metadata
-        }),
-    );
+    let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,16.5],vec![10.0,30.0,40.5]];
+    let values: Vec<String> = vec!["yellow".to_string(),"happy".to_string()];
+    let result=db.insert_into_collection("name", keys, values);
 
-    let _ = db.insert_into_collection("name", embedding1);
-    let _ = db.insert_into_collection("name", embedding2);
-    let _ = db.add_content("example_id1".to_string(), "hello world".to_string());
-    let _ = db.add_content("example_id2".to_string(), "hello alex".to_string());
+    println!("{:?}",result);
 
-    // println!("{:?}",db.get_collection("name"));
-    let query: [f32; 5] = [1.0, 2.0, 3.0, 4.0, 5.0];
+    let _ = db.build_index("name");
+    let query_vec: Vec<f32>=vec![10.0,12.5,4.5];
+    let reslut = db.query("name",query_vec,1);
+    println!("{:?}",reslut);
 
-    let collection: Collection = db.get_collection("name").cloned().unwrap();
 
-    println!("{:?}", collection);
-
-    let similar = collection.get_similarity(&query, 2);
-
-    println!("{:?}", similar);
-
-    for i in similar {
-        db.get_content(i.embedding.id);
-    }
 }

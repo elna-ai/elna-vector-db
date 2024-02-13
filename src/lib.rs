@@ -29,6 +29,14 @@ fn insert(name: String, keys: Vec<Vec<f32>>, values: Vec<String>) -> Result<(), 
     })
 }
 
+#[update]
+fn build_index(name:String) -> Result<(), String> {
+    DB.with(|db| {
+        let mut db = db.borrow_mut();
+        db.build_index(&name)
+    })
+}
+
 #[query]
 fn query(name:String,q: Vec<f32>, limit: i32) -> Vec<String> {
     DB.with(|db| {

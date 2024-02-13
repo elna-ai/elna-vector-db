@@ -94,41 +94,6 @@ impl Database {
         Ok(())
     }
 
-    pub fn test(
-        &mut self,
-        name: &str,
-        keys: Vec<Vec<f32>>, 
-        values: Vec<String>    ) -> Result<(), Error> {
-        let collection = self.collections.get_mut(name).ok_or(Error::NotFound)?;
-
-        // if collection.keys.iter().any(|e| e.id == embedding.id) {
-        //     return Err(Error::UniqueViolation);
-        // }
-
-        // if collection.keys.len() != collection.dimension {
-        //     return Err(Error::DimensionMismatch);
-        // }
-
-        // if collection.keys.len() != collection.values.len() {
-        //     return Err(Error::DimensionMismatch);
-        // }
-        let mut points: Vec<Vector> = vec![];
-        let mut _values: Vec<String> = vec![];
-
-        for i in 0..keys.len() {
-            let key = &keys[i];
-            if key.len() !=  collection.dimension {
-                continue;
-            }
-            let point = Vector::from((*key).clone());
-            points.push(point);
-            _values.push(values[i].clone());
-        }
-
-        collection.append(&mut points, &mut _values);
-        collection.build_index();
-        Ok(())
-    }
 
     pub fn query(&mut self,name: &str,q: Vec<f32>, limit: i32) -> Result<Vec<(f32, String)>, String> {
         // let collection = self.collections.get_mut(name).ok_or_else(|| Error::NotFound)?;

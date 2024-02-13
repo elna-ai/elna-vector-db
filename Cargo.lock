@@ -218,7 +218,6 @@ dependencies = [
  "ic-cdk",
  "instant-distance",
  "nalgebra",
- "rayon",
  "schemars",
  "serde",
  "thiserror",

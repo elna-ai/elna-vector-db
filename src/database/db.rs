@@ -1,6 +1,5 @@
 use super::index::Vector;
 use instant_distance::Search;
-use rayon::result;
 use std::collections::HashMap;
 use crate::database::collection::Collection;
 use candid::CandidType;

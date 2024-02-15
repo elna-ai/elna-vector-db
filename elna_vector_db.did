@@ -4,6 +4,7 @@ type Result_1 = variant { Ok; Err : Error };
 service : {
   build_index : (text) -> (Result);
   create_collection : (text, nat64) -> (Result_1);
+  delete_collection : (text) -> (Result_1);
   insert : (text, vec vec float32, vec text) -> (Result_1);
   "query" : (text, vec float32, int32) -> (vec text) query;
 }

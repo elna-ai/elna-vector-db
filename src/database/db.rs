@@ -114,9 +114,9 @@ impl Database {
         Ok(result)
     }
 
-    pub fn get_collection(&self, name: &str) -> Option<&Collection> {
-        self.collections.get(name)
-    }
+    // pub fn get_collection(&self, name: &str) -> Option<&Collection> {
+    //     self.collections.get(name)
+    // }
 
     pub fn delete_collection(&mut self, name: &str) -> Result<(), Error> {
         if let Some(_) = self.collections.remove(name) {

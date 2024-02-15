@@ -37,6 +37,16 @@ fn build_index(name:String) -> Result<(), String> {
     })
 }
 
+#[update]
+fn delete_collection(name: String) -> Result<(), Error> {
+
+    DB.with(|db| {
+        let mut db = db.borrow_mut();
+        db.delete_collection(&name)
+    })
+
+}
+
 #[query]
 fn query(name:String,q: Vec<f32>, limit: i32) -> Vec<String> {
     DB.with(|db| {

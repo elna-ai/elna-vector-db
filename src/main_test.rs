@@ -28,7 +28,10 @@ fn main(){
 
     println!("{:?}",result);
 
+
     let _ = db.build_index("name");
+
+
     let query_vec: Vec<f32>=vec![10.0,12.5,4.5];
     let reslut = db.query("name",query_vec,1);
     println!("{:?}",reslut);

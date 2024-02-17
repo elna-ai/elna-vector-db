@@ -128,3 +128,171 @@ impl Database {
     
 }
 
+#[cfg(test)]
+mod tests {
+    use super::{Database, Error};
+
+    #[test]
+    fn create_collection() {
+        let mut db: Database = Database::new();
+        let result = db.create_collection("test".to_string(), 3);
+        assert!(result.is_ok())
+    }
+
+    #[test]
+    fn create_duplicate_collection() {
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 3);
+        let result = db.create_collection("test".to_string(), 3);
+        let expected = Err(Error::UniqueViolation);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn delete_existing_collection() {
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 3);
+
+        assert_eq!(db.delete_collection("test"), Ok(()))
+    }
+
+    #[test]
+    fn delete_non_existing_collection() {
+        let mut db: Database = Database::new();
+
+        assert_eq!(db.delete_collection("test"), Err(Error::NotFound))
+    }
+
+    #[test]
+    fn build_index() {
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 3);
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+        let _=db.insert_into_collection("test", keys, values);
+        let result = db.build_index("test");
+        assert_eq!(result, Ok(()));
+    }
+
+    #[test]
+    fn append_and_build_index() {
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 3);
+
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+        let _=db.insert_into_collection("test", keys, values);
+        let _ = db.build_index("test");
+
+        let keys: Vec<Vec<f32>> = vec![vec![20.0,20.5,15.0]];
+        let values: Vec<String> = vec!["black".to_string()];
+        let _=db.insert_into_collection("test", keys, values);
+        let result = db.build_index("test");
+        assert_eq!(result, Ok(()));
+    }
+
+
+
+    #[test]
+    fn delete_collection_with_embeddings() {
+        let mut db: Database = Database::new();
+        let _ = db.create_collection("test".to_string(), 3);
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+        let _=db.insert_into_collection("test", keys, values);
+        let _ = db.build_index("test");
+        assert_eq!(db.delete_collection("test"), Ok(()));
+    }
+
+ 
+    #[test]
+    fn insert_into_collection_dimensions_mismatch_keys_values() {
+        let mut db: Database = Database::new();
+
+        let _ = db.create_collection("test".to_string(), 3);
+
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string()];
+        let result=db.insert_into_collection("test", keys, values);
+
+        assert_eq!(result, Err(Error::DimensionMismatch));
+    }
+
+    #[test]
+    fn insert_into_collection_dimensions_mismatch_keys() {
+        let mut db: Database = Database::new();
+
+        let _ = db.create_collection("test".to_string(), 3);
+
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0,10.2]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
+        let result=db.insert_into_collection("test", keys, values);
+
+        assert_eq!(result, Err(Error::DimensionMismatch));
+    }
+
+
+    #[test]
+    fn insert_into_collection_dimensions_mismatch() {
+        let mut db: Database = Database::new();
+
+        let _ = db.create_collection("test".to_string(), 4);
+
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
+        let result=db.insert_into_collection("test", keys, values);
+
+        assert_eq!(result, Err(Error::DimensionMismatch));
+    }
+
+
+    #[test]
+    fn insert_into_non_existing_collection() {
+        let mut db: Database = Database::new();
+
+        let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+        let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
+
+        let result=db.insert_into_collection("test", keys, values);
+
+        assert_eq!(result, Err(Error::NotFound));
+    }
+
+    #[test]
+    fn query() {
+        let mut db = Database::new();
+    let _ = db.create_collection("test".to_string(), 3);
+    let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+    let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+    let _=db.insert_into_collection("test", keys, values);
+
+    let _ = db.build_index("test");
+
+    let query_vec: Vec<f32>=vec![10.0,12.5,4.5];
+    let result = db.query("test",query_vec,1);
+    assert_eq!(result,Ok(vec![(0.9997943, "red".to_string())]));
+
+    }
+
+    #[test]
+    fn query_with_append() {
+        let mut db = Database::new();
+    let _ = db.create_collection("test".to_string(), 3);
+    let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
+    let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
+    let _=db.insert_into_collection("test", keys, values);
+
+    let _ = db.build_index("test");
+
+    let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,16.5],vec![10.0,30.0,40.5]];
+    let values: Vec<String> = vec!["yellow".to_string(),"happy".to_string()];
+    let _=db.insert_into_collection("test", keys, values);
+
+    let _ = db.build_index("test");
+
+    let query_vec: Vec<f32>=vec![10.0,30.5,35.5];
+    let result = db.query("test",query_vec,1);
+    assert_eq!(result,Ok(vec![(0.9973914, "happy".to_string())]));
+
+    }
+}

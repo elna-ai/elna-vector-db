@@ -1,15 +1,18 @@
 [package]
-name = "ic_vector"
-version = "0.1.0"
+name = "elna_vector_db"
+version = "1.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib"]
+
 
 [dependencies]
+candid = "0.10"
+ic-cdk = "0.12"
+serde = "1.0.196"
 schemars = "0.8.12"
-serde = "1.0.165"
 thiserror = "1.0.40"
-rayon = "1.7.0"
-
-
-
+instant-distance = { git = "https://github.com/bianyuanop/instant-distance", version = "0.6.1"}
+nalgebra = {version = "0.32.3", default-features = false, features = ["libm", "alloc"]}

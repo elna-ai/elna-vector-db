@@ -70,4 +70,14 @@ fn query(name:String,q: Vec<f32>, limit: i32) -> Vec<String> {
 
 }
 
+#[query]
+fn get_collections() -> Vec<String> {
+
+    DB.with(|db| {
+        let db = db.borrow();
+        db.get_all_collections()
+    })
+
+}
+
 export_candid!();

@@ -126,6 +126,12 @@ impl Database {
         }
     }
     
+    pub fn get_all_collections(&self)->Vec<String> {
+
+        self.collections.keys().cloned().collect()
+
+    }
+
 }
 
 #[cfg(test)]

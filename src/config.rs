@@ -1,1 +1,1 @@
-pub const EMBEDDING_LENGTH: usize = 3;
+pub const EMBEDDING_LENGTH: usize = 1536;

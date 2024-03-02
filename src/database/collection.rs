@@ -1,12 +1,18 @@
 use crate::database::index::Vector;
 use instant_distance::{HnswMap,Search};
 use super::index::generate_index;
+use std::collections::HashSet;
+
+pub struct  Metadata{
+    pub file_names:HashSet<String>
+}
 
 pub struct Collection {
     pub dimension: usize,
     pub inner: HnswMap<Vector, String>,
     pub keys: Vec<Vector>,
     pub values: Vec<String>,
+    pub metadata:Metadata
 }
 
 impl Collection {
@@ -16,15 +22,17 @@ impl Collection {
             keys: keys.clone(), 
             values: values.clone(), 
             inner: generate_index(keys, values),
+            metadata: Metadata{file_names: HashSet::new()}
         }
     }
 
-    pub fn append(&mut self, keys: &mut Vec<Vector>, values: &mut Vec<String>) -> Result<(), String> {
+    pub fn append(&mut self, keys: &mut Vec<Vector>, values: &mut Vec<String>,file_name:String) -> Result<(), String> {
         // if keys.len() != values.len() {
         //     return Err(String::from("length of keys not euqal to values'"));
         // }
         self.keys.append(keys);
         self.values.append(values);
+        self.metadata.file_names.insert(file_name);
 
         Ok(())
     }

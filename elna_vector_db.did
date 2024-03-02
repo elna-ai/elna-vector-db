@@ -1,11 +1,13 @@
 type Error = variant { UniqueViolation; DimensionMismatch; NotFound };
 type Result = variant { Ok; Err : text };
 type Result_1 = variant { Ok; Err : Error };
+type Result_2 = variant { Ok : vec text; Err : Error };
 service : {
   build_index : (text) -> (Result);
   create_collection : (text, nat64) -> (Result_1);
   delete_collection : (text) -> (Result_1);
   get_collections : () -> (vec text) query;
-  insert : (text, vec vec float32, vec text) -> (Result_1);
+  get_docs : (text) -> (Result_2) query;
+  insert : (text, vec vec float32, vec text, text) -> (Result_1);
   "query" : (text, vec float32, int32) -> (vec text) query;
 }

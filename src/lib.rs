@@ -22,10 +22,10 @@ fn create_collection(name: String, dimension: usize) -> Result<(), Error> {
 
 
 #[update]
-fn insert(name: String, keys: Vec<Vec<f32>>, values: Vec<String>) -> Result<(), Error> {
+fn insert(name: String, keys: Vec<Vec<f32>>, values: Vec<String>,file_name:String) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
-        db.insert_into_collection(&name,keys, values)
+        db.insert_into_collection(&name,keys, values,file_name)
     })
 }
 
@@ -76,6 +76,16 @@ fn get_collections() -> Vec<String> {
     DB.with(|db| {
         let db = db.borrow();
         db.get_all_collections()
+    })
+
+}
+
+#[query]
+fn get_docs(index_name:String) -> Result<Vec<String>,Error> {
+
+    DB.with(|db| {
+        let mut db = db.borrow_mut();
+        db.get_docs(index_name.as_str())
     })
 
 }

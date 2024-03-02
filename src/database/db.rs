@@ -51,7 +51,8 @@ impl Database {
         &mut self,
         name: &str,
         keys: Vec<Vec<f32>>, 
-        values: Vec<String>    ) -> Result<(), Error> {
+        values: Vec<String>,
+        file_name:String ) -> Result<(), Error> {
         let collection = self.collections.get_mut(name).ok_or(Error::NotFound)?;
 
         if keys.len() != values.len() {
@@ -81,7 +82,7 @@ impl Database {
             _values.push(values[i].clone());
         }
 
-        let _ = collection.append(&mut points, &mut _values);
+        let _ = collection.append(&mut points, &mut _values,file_name);
         // collection.build_index();
         Ok(())
     }
@@ -132,6 +133,19 @@ impl Database {
 
     }
 
+    pub fn get_docs(&mut self,index_name:&str)->Result<Vec<String>,Error>{
+
+
+        let collection = match self.collections.get_mut(index_name) {
+            Some(value) => value,
+            None => return Err(Error::NotFound),
+        };
+        Ok(Vec::from_iter(collection.metadata.file_names.clone()))
+
+    }
+
+
+
 }
 
 #[cfg(test)]
@@ -175,7 +189,7 @@ mod tests {
         let _ = db.create_collection("test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
-        let _=db.insert_into_collection("test", keys, values);
+        let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
         let result = db.build_index("test");
         assert_eq!(result, Ok(()));
     }
@@ -187,12 +201,12 @@ mod tests {
 
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
-        let _=db.insert_into_collection("test", keys, values);
+        let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
         let _ = db.build_index("test");
 
         let keys: Vec<Vec<f32>> = vec![vec![20.0,20.5,15.0]];
         let values: Vec<String> = vec!["black".to_string()];
-        let _=db.insert_into_collection("test", keys, values);
+        let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
         let result = db.build_index("test");
         assert_eq!(result, Ok(()));
     }
@@ -205,7 +219,7 @@ mod tests {
         let _ = db.create_collection("test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
-        let _=db.insert_into_collection("test", keys, values);
+        let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
         let _ = db.build_index("test");
         assert_eq!(db.delete_collection("test"), Ok(()));
     }
@@ -219,7 +233,7 @@ mod tests {
 
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string()];
-        let result=db.insert_into_collection("test", keys, values);
+        let result=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
         assert_eq!(result, Err(Error::DimensionMismatch));
     }
@@ -232,7 +246,7 @@ mod tests {
 
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0,10.2]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
-        let result=db.insert_into_collection("test", keys, values);
+        let result=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
         assert_eq!(result, Err(Error::DimensionMismatch));
     }
@@ -246,7 +260,7 @@ mod tests {
 
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
-        let result=db.insert_into_collection("test", keys, values);
+        let result=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
         assert_eq!(result, Err(Error::DimensionMismatch));
     }
@@ -259,7 +273,7 @@ mod tests {
         let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
         let values: Vec<String> = vec!["red".to_string(),"green".to_string(),"blue".to_string()];
 
-        let result=db.insert_into_collection("test", keys, values);
+        let result=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
         assert_eq!(result, Err(Error::NotFound));
     }
@@ -270,7 +284,7 @@ mod tests {
     let _ = db.create_collection("test".to_string(), 3);
     let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
     let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
-    let _=db.insert_into_collection("test", keys, values);
+    let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
     let _ = db.build_index("test");
 
@@ -286,13 +300,13 @@ mod tests {
     let _ = db.create_collection("test".to_string(), 3);
     let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,4.5],vec![10.0,11.0,10.5],vec![10.0,20.5,15.0]];
     let values: Vec<String> = vec!["red".to_string(),"green".to_string(), "blue".to_string()];
-    let _=db.insert_into_collection("test", keys, values);
+    let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
     let _ = db.build_index("test");
 
     let keys: Vec<Vec<f32>> = vec![vec![10.0,12.0,16.5],vec![10.0,30.0,40.5]];
     let values: Vec<String> = vec!["yellow".to_string(),"happy".to_string()];
-    let _=db.insert_into_collection("test", keys, values);
+    let _=db.insert_into_collection("test", keys, values,"test_file_name".to_string());
 
     let _ = db.build_index("test");
 

@@ -1,39 +1,36 @@
 use instant_distance::{Builder, HnswMap, Point};
-use nalgebra::SVector;
 use nalgebra::ComplexField;
-use crate::config::EMBEDDING_LENGTH;
-
-
+use nalgebra::DVector;
 
 pub fn generate_index(points: Vec<Vector>, values: Vec<String>) -> HnswMap<Vector, String> {
     Builder::default().build(points, values)
 }
 
-#[derive(Copy, Clone, Debug)] 
+#[derive(Clone, Debug)]
 pub struct Vector {
-    data: SVector<f32, EMBEDDING_LENGTH>
+    data: DVector<f32>,
 }
 
-impl Point for Vector { 
+impl Point for Vector {
     fn distance(&self, other: &Self) -> f32 {
-        let diff = self.data - other.data;
+        let diff = self.data.clone() - other.data.clone();
         diff.dot(&diff).norm1()
     }
 }
 
 impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool {
-        self.data == other.data 
+        self.data == other.data
     }
     fn ne(&self, other: &Self) -> bool {
-        !self.eq(other) 
+        !self.eq(other)
     }
 }
 
 impl From<Vec<f32>> for Vector {
     fn from(value: Vec<f32>) -> Self {
-        let svec = SVector::from_vec(value);
-        Vector { data:  svec}
+        let svec = DVector::from_vec(value);
+        Vector { data: svec }
     }
 }
 

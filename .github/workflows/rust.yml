@@ -23,6 +23,6 @@ jobs:
           rustup target add wasm32-unknown-unknown
 
     - name: Build
-      run: cargo build --manifest-path="Cargo.toml" --target wasm32-unknown-unknown --release --package "elna_vector_db" --verbose
+      run: cargo build --manifest-path="Cargo.toml" --target wasm32-unknown-unknown --release --package "elna_db_backend" --verbose
     - name: Run tests
       run: cargo test --verbose

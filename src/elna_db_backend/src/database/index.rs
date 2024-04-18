@@ -1,12 +1,12 @@
 use instant_distance::{Builder, HnswMap, Point};
-use nalgebra::ComplexField;
-use nalgebra::DVector;
+use nalgebra::{ComplexField, DVector};
+use serde::{Deserialize, Serialize};
 
 pub fn generate_index(points: Vec<Vector>, values: Vec<String>) -> HnswMap<Vector, String> {
     Builder::default().build(points, values)
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Vector {
     data: DVector<f32>,
 }

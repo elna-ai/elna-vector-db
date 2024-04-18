@@ -4,6 +4,13 @@
         "./Cargo.toml",
         "./Cargo.toml",
         "./Cargo.toml",
+        "./Cargo.toml",
+        "./Cargo.toml",
+        "./Cargo.toml",
+        "./Cargo.toml",
         "./Cargo.toml"
+    ],
+    "cSpell.words": [
+        "elna"
     ]
 }

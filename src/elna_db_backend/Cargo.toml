@@ -1,0 +1,21 @@
+[package]
+name = "elna_db_backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+nalgebra = {version = "0.32.3", default-features = false, features = ["libm", "alloc","serde-serialize","std"]}
+instant-distance = { git = "https://github.com/elna-ai/instant-distance", version = "0.6.1",features = ["serde","serde-big-array"]}
+thiserror = "1.0.40"
+ic-cdk = "0.11.0"
+ic-cdk-macros = "0.8.1"
+candid  = "0.9.9"
+ic-stable-structures = "0.6.0-beta.2"
+serde = "1"
+ciborium = "0.2.1"
+

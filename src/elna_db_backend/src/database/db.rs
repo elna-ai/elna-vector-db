@@ -98,10 +98,10 @@ impl Database {
         Ok(())
     }
 
-    pub fn build_index(&mut self, name: &String) -> Result<(), String> {
+    pub fn build_index(&mut self, name: &String) -> Result<(), Error> {
         let collection = self.collections.get_mut(name).ok_or(Error::NotFound)?;
-        collection.build_index();
 
+        collection.build_index();
         Ok(())
     }
 

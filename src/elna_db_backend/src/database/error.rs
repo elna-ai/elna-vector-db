@@ -10,6 +10,8 @@ pub enum Error {
 
     #[error("The dimension of the vector doesn't match the dimension of the collection")]
     DimensionMismatch,
+    #[error("User not authorized")]
+    Unauthorized,
 }
 impl From<Error> for String {
     fn from(error: Error) -> Self {

@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "src/elna_db_backend"
+    "src/elna_db_backend",
+    "src/elna_auth_macros"
 ]
 resolver = "2"

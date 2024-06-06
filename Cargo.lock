@@ -255,11 +255,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a47c1c47d2f5964e29c61246e81db715514cd532db6b5116a25ea3c03d6780a2"
 
 [[package]]
+name = "elna_auth_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.60",
+]
+
+[[package]]
 name = "elna_db_backend"
 version = "0.1.0"
 dependencies = [
  "candid",
  "ciborium",
+ "elna_auth_macros",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-stable-structures",

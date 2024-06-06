@@ -18,4 +18,5 @@ candid  = "0.9.9"
 ic-stable-structures = "0.6.0-beta.2"
 serde = "1"
 ciborium = "0.2.1"
+elna_auth_macros = { path = "../elna_auth_macros" }
 

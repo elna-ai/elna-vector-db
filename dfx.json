@@ -16,6 +16,10 @@
     "staging": {
       "providers": ["https://icp0.io"],
       "type": "persistent"
+    },
+    "production": {
+      "providers": ["https://icp0.io"],
+      "type": "persistent"
     }
   },
   "output_env_file": ".env",

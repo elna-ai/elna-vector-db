@@ -1,12 +1,27 @@
+extern crate elna_auth_macros;
+
 mod database;
+use candid::Principal;
 use database::db::DB;
 use database::error::Error;
 use database::memory::get_upgrades_memory;
-use ic_cdk::{post_upgrade, pre_upgrade, query, update};
+use elna_auth_macros::check_authorization;
+use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_macros::export_candid;
 use ic_stable_structures::{writer::Writer, Memory as _};
+use std::cell::RefCell;
+
+thread_local! {
+    pub static OWNER: RefCell<String> = RefCell::new(String::new())
+}
+
+#[init]
+fn init(owner: Principal) {
+    OWNER.with(|o| *o.borrow_mut() = owner.to_string());
+}
 
 #[update]
+#[check_authorization]
 fn create_collection(name: String, dimension: usize) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
@@ -15,6 +30,7 @@ fn create_collection(name: String, dimension: usize) -> Result<(), Error> {
 }
 
 #[update]
+#[check_authorization]
 fn insert(
     name: String,
     keys: Vec<Vec<f32>>,
@@ -28,7 +44,8 @@ fn insert(
 }
 
 #[update]
-fn build_index(name: String) -> Result<(), String> {
+#[check_authorization]
+fn build_index(name: String) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
         db.build_index(&name)
@@ -36,6 +53,7 @@ fn build_index(name: String) -> Result<(), String> {
 }
 
 #[update]
+#[check_authorization]
 fn delete_collection(name: String) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
@@ -44,7 +62,8 @@ fn delete_collection(name: String) -> Result<(), Error> {
 }
 
 #[query]
-fn query(name: String, q: Vec<f32>, limit: i32) -> Vec<String> {
+#[check_authorization]
+fn query(name: String, q: Vec<f32>, limit: i32) -> Result<Vec<String>, Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
         let result = db.query(&name, q, limit);
@@ -53,32 +72,38 @@ fn query(name: String, q: Vec<f32>, limit: i32) -> Vec<String> {
                 // Extract the Vec<(f32, String)> from the Ok variant
                 let (_, strings): (Vec<_>, Vec<_>) = data.into_iter().unzip();
                 // println!("Floats: {:?}", floats);
-                strings
+                Ok(strings)
             }
             Err(error) => {
-                // Handle the error
                 println!("Error: {}", error);
-                vec![error]
+                Err(Error::NotFound)
             }
         }
     })
 }
 
 #[query]
-fn get_collections() -> Vec<String> {
+#[check_authorization]
+fn get_collections() -> Result<Vec<String>, Error> {
     DB.with(|db| {
         let db = db.borrow();
-        db.get_all_collections()
+        Ok(db.get_all_collections())
     })
 }
 
 #[query]
+#[check_authorization]
 fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
         db.get_docs(&index_name)
     })
 }
+
+// #[query]
+// fn get_pid() -> String {
+//     OWNER.with(|owner| owner.borrow().clone())
+// }
 
 #[pre_upgrade]
 fn pre_upgrade() {
@@ -99,7 +124,8 @@ fn pre_upgrade() {
 
 // A post-upgrade hook for deserializing the data back into the heap.
 #[post_upgrade]
-fn post_upgrade() {
+fn post_upgrade(owner: Principal) {
+    init(owner);
     let memory = get_upgrades_memory();
     // Read the length of the state bytes.
     let mut state_len_bytes = [0; 4];

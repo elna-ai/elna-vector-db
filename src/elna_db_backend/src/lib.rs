@@ -100,6 +100,11 @@ fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
     })
 }
 
+// #[query]
+// fn get_pid() -> String {
+//     OWNER.with(|owner| owner.borrow().clone())
+// }
+
 #[pre_upgrade]
 fn pre_upgrade() {
     // Serialize the state.
@@ -119,7 +124,8 @@ fn pre_upgrade() {
 
 // A post-upgrade hook for deserializing the data back into the heap.
 #[post_upgrade]
-fn post_upgrade() {
+fn post_upgrade(owner: Principal) {
+    init(owner);
     let memory = get_upgrades_memory();
     // Read the length of the state bytes.
     let mut state_len_bytes = [0; 4];

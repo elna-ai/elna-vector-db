@@ -5,14 +5,15 @@ use candid::Principal;
 use database::db::DB;
 use database::error::Error;
 use database::memory::get_upgrades_memory;
-use elna_auth_macros::check_authorization;
+use elna_auth_macros::{check_authorization, check_is_owner};
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_macros::export_candid;
 use ic_stable_structures::{writer::Writer, Memory as _};
 use std::cell::RefCell;
 
 thread_local! {
-    pub static OWNER: RefCell<String> = RefCell::new(String::new())
+    pub static OWNER: RefCell<String> = RefCell::new(String::new());
+    pub static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
 }
 
 #[init]
@@ -100,10 +101,34 @@ fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
     })
 }
 
-// #[query]
-// fn get_pid() -> String {
-//     OWNER.with(|owner| owner.borrow().clone())
-// }
+#[query]
+#[check_is_owner]
+fn get_admins() -> Result<Vec<Principal>, Error> {
+    ADMINS.with(|admins| {
+        let admins = admins.borrow();
+        Ok(admins.clone())
+    })
+}
+
+#[update]
+#[check_is_owner]
+fn add_admin(principal_id: Principal) -> Result<(), Error> {
+    ADMINS.with(|admins| {
+        let mut admins = admins.borrow_mut();
+        admins.push(principal_id);
+        Ok(())
+    })
+}
+
+#[update]
+#[check_is_owner]
+fn remove_admin(principal_id: Principal) -> Result<(), Error> {
+    ADMINS.with(|admins| {
+        let mut admins = admins.borrow_mut();
+        admins.retain(|admin| admin != &principal_id);
+        Ok(())
+    })
+}
 
 #[pre_upgrade]
 fn pre_upgrade() {

@@ -16,8 +16,8 @@ pub fn check_authorization(_attr: TokenStream, item: TokenStream) -> TokenStream
         fn #name(#params) #return_type {
             let caller = ic_cdk::caller();
             let owner_principal = OWNER.with(|owner| owner.borrow().clone());
-            let admins = ADMINS.with(|admins| admins.borrow().clone());
-            if (!(caller.to_string() == owner_principal || admins.contains(&caller))) {
+            let admins = ADMINS.with(|admins| {admins.borrow().iter().collect::<Vec<_>>()});
+            if (!(caller.to_string() == owner_principal || admins.contains(&StorablePrincipal(caller)))) {
                 return Err(Error::Unauthorized);
             }
             #body

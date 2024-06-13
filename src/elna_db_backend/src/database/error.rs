@@ -12,6 +12,8 @@ pub enum Error {
     DimensionMismatch,
     #[error("User not authorized")]
     Unauthorized,
+    #[error("Memory error")]
+    MemoryError,
 }
 impl From<Error> for String {
     fn from(error: Error) -> Self {

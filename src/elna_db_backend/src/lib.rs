@@ -1,19 +1,49 @@
 extern crate elna_auth_macros;
 
 mod database;
-use candid::Principal;
+use candid::{CandidType, Principal};
 use database::db::DB;
 use database::error::Error;
 use database::memory::get_upgrades_memory;
 use elna_auth_macros::{check_authorization, check_is_owner};
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_macros::export_candid;
-use ic_stable_structures::{writer::Writer, Memory as _};
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    storable::Bound,
+    writer::Writer,
+    DefaultMemoryImpl, Memory as _, StableVec, Storable,
+};
 use std::cell::RefCell;
+
+#[derive(CandidType, Clone, PartialEq, Debug)]
+struct StorablePrincipal(Principal);
+
+type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+impl Storable for StorablePrincipal {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        std::borrow::Cow::Borrowed(self.0.as_slice())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Self(Principal::from_slice(&bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 50,
+        is_fixed_size: false,
+    };
+}
 
 thread_local! {
     pub static OWNER: RefCell<String> = RefCell::new(String::new());
-    pub static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+    static ADMINS :RefCell<StableVec<StorablePrincipal,Memory>> = RefCell::new(
+        StableVec::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))
+        ).expect("Memory error")
+    )
 }
 
 #[init]
@@ -103,29 +133,53 @@ fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
 
 #[query]
 #[check_is_owner]
-fn get_admins() -> Result<Vec<Principal>, Error> {
+fn get_admins() -> Result<Vec<StorablePrincipal>, Error> {
     ADMINS.with(|admins| {
-        let admins = admins.borrow();
-        Ok(admins.clone())
+        let admins = admins.borrow().iter().collect::<Vec<_>>();
+        Ok(admins)
     })
 }
 
 #[update]
 #[check_is_owner]
 fn add_admin(principal_id: Principal) -> Result<(), Error> {
+    let target_principal = StorablePrincipal(principal_id);
     ADMINS.with(|admins| {
-        let mut admins = admins.borrow_mut();
-        admins.push(principal_id);
-        Ok(())
+        let admins = admins.borrow_mut();
+        let exists = admins
+            .iter()
+            .any(|stored_principal| stored_principal == target_principal);
+        if exists {
+            return Err(Error::UniqueViolation);
+        }
+        match admins.push(&target_principal) {
+            Ok(_) => return Ok(()),
+            Err(_) => return Err(Error::MemoryError),
+        };
     })
 }
 
 #[update]
 #[check_is_owner]
 fn remove_admin(principal_id: Principal) -> Result<(), Error> {
+    let target_principal = StorablePrincipal(principal_id);
     ADMINS.with(|admins| {
-        let mut admins = admins.borrow_mut();
-        admins.retain(|admin| admin != &principal_id);
+        let admins = admins.borrow_mut();
+
+        let admin_exist = admins.iter().any(|principal| principal == target_principal);
+        if admin_exist {
+            let new_admins = admins
+                .iter()
+                .filter(|principal| principal != &target_principal)
+                .collect::<Vec<_>>();
+            let new_st = StableVec::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))))
+                .expect("Unable to read memory");
+            for admin in new_admins {
+                let _ = new_st.push(&admin);
+            }
+        } else {
+            return Err(Error::NotFound);
+        }
         Ok(())
     })
 }

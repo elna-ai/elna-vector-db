@@ -1,55 +1,16 @@
 extern crate elna_auth_macros;
 
 mod database;
-use candid::{CandidType, Principal};
+use candid::Principal;
 use database::db::DB;
 use database::error::Error;
 use database::memory::get_upgrades_memory;
-use elna_auth_macros::{check_authorization, check_is_owner};
-use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
+use database::users::{ADMINS, OWNER};
+use elna_auth_macros::check_authorization;
+use ic_cdk::{post_upgrade, pre_upgrade, query, update};
 use ic_cdk_macros::export_candid;
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    storable::Bound,
-    writer::Writer,
-    DefaultMemoryImpl, Memory as _, StableBTreeMap, Storable,
-};
-use std::cell::RefCell;
-
-#[derive(CandidType, Clone, PartialEq, Debug, Eq, PartialOrd, Ord)]
-struct StorablePrincipal(Principal);
-
-type Memory = VirtualMemory<DefaultMemoryImpl>;
-
-impl Storable for StorablePrincipal {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
-        std::borrow::Cow::Borrowed(self.0.as_slice())
-    }
-
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        Self(Principal::from_slice(&bytes))
-    }
-
-    const BOUND: Bound = Bound::Bounded {
-        max_size: 50,
-        is_fixed_size: false,
-    };
-}
-
-thread_local! {
-    pub static OWNER: RefCell<String> = RefCell::new(String::new());
-    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-    static ADMINS: RefCell<StableBTreeMap<StorablePrincipal, bool, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2)))
-        )
-    );
-}
-
-#[init]
-fn init(owner: Principal) {
-    OWNER.with(|o| *o.borrow_mut() = owner.to_string());
-}
+use ic_stable_structures::writer::Writer;
+use ic_stable_structures::Memory as _;
 
 #[update]
 #[check_authorization]
@@ -131,46 +92,6 @@ fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
     })
 }
 
-#[query]
-#[check_is_owner]
-fn get_admins() -> Result<Vec<Principal>, Error> {
-    ADMINS.with(|admins| {
-        let admins = admins.borrow().iter().map(|(k, _)| k.0).collect::<Vec<_>>();
-        Ok(admins)
-    })
-}
-
-#[update]
-#[check_is_owner]
-fn add_admin(principal_id: Principal) -> Result<(), Error> {
-    let target_principal = StorablePrincipal(principal_id);
-    ADMINS.with(|admins| {
-        let mut admins = admins.borrow_mut();
-        let exists = admins.contains_key(&target_principal);
-        if exists {
-            return Err(Error::UniqueViolation);
-        }
-        admins.insert(target_principal, true);
-        return Ok(());
-    })
-}
-
-#[update]
-#[check_is_owner]
-fn remove_admin(principal_id: Principal) -> Result<(), Error> {
-    let target_principal = StorablePrincipal(principal_id);
-    ADMINS.with(|admins| {
-        let mut admins = admins.borrow_mut();
-        let exists = admins.contains_key(&target_principal);
-        if !exists {
-            return Err(Error::NotFound);
-        }
-
-        admins.remove(&target_principal);
-        return Ok(());
-    })
-}
-
 #[pre_upgrade]
 fn pre_upgrade() {
     // Serialize the state.
@@ -191,7 +112,8 @@ fn pre_upgrade() {
 // A post-upgrade hook for deserializing the data back into the heap.
 #[post_upgrade]
 fn post_upgrade(owner: Principal) {
-    init(owner);
+    OWNER.with(|o| *o.borrow_mut() = owner.to_string());
+
     let memory = get_upgrades_memory();
     // Read the length of the state bytes.
     let mut state_len_bytes = [0; 4];

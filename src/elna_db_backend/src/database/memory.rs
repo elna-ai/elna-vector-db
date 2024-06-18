@@ -7,7 +7,7 @@ const UPGRADES: MemoryId = MemoryId::new(0);
 
 // A memory for the StableBTreeMap we're using. A new memory should be created for
 // every additional stable structure.
-// const STABLE_BTREE: MemoryId = MemoryId::new(1);
+const STABLE_BTREE: MemoryId = MemoryId::new(1);
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -22,6 +22,6 @@ pub fn get_upgrades_memory() -> Memory {
     MEMORY_MANAGER.with(|m| m.borrow().get(UPGRADES))
 }
 
-// pub fn get_stable_btree_memory() -> Memory {
-//     MEMORY_MANAGER.with(|m| m.borrow().get(STABLE_BTREE))
-// }
+pub fn get_stable_btree_memory() -> Memory {
+    MEMORY_MANAGER.with(|m| m.borrow().get(STABLE_BTREE))
+}

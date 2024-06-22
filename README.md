@@ -4,7 +4,7 @@
 
 Welcome to our new vector_database project and to the internet computer development community. 
 
-# What is ELNA's VectodDB
+# What is ELNA's VectorDB
 
 It is an open-source and fully on-chain vector database and vector similarity search engine, that helps AI applications on ICP. 
 
@@ -13,6 +13,25 @@ This is released under the [open-source Apache License 2.0] in October 2024.
 
 # Instant Distance: fast HNSW indexing
 Here we using HNSW algorthm to index the vecotr embeddings. [Instance Distance](https://github.com/instant-labs/instant-distance) is a fast pure-Rust implementation of the Hierarchical Navigable Small Worlds paper by Malkov and Yashunin for finding approximate nearest neighbors (ANN).
+
+# VectorDB Features
+
+## Storage Capabilities
+- **Variable Dimension Storage**: Our VectorDB supports the storage of vectors with varying dimensions, allowing for flexible data management.
+
+## Stability and Persistence
+- **Stable Memory Support**: VectorDB ensures data persistence across upgrades. The data is stored in stable memory during the pre-upgrade hook and is reloaded into the heap after the canister upgrade, maintaining data integrity and continuity.
+
+## Security and Access Control
+- **Super User and Admin Management**: 
+
+  - **Super User**: Each vector canister has a designated super user who has full control over the canister.
+
+  - **Admin Management**: The super user can add or remove admin users who have permissions to read or write in the VectorDB.
+  
+  - **Stable Structure Support**: The security structure is also stable, ensuring that the access control mechanisms persist through upgrades.
+
+---
 
 
 # Getting Started

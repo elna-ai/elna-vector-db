@@ -1,6 +1,7 @@
 extern crate elna_auth_macros;
 
 mod database;
+
 use candid::Principal;
 use database::db::DB;
 use database::error::Error;
@@ -36,7 +37,7 @@ fn insert(
 }
 
 #[update]
-#[check_authorization]
+// #[check_authorization]
 fn build_index(name: String) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
@@ -90,6 +91,30 @@ fn get_docs(index_name: String) -> Result<Vec<String>, Error> {
         let mut db = db.borrow_mut();
         db.get_docs(&index_name)
     })
+}
+
+#[update]
+#[check_authorization]
+fn import(byte_array: String) -> Result<(), Error> {
+    let hex_values: Vec<&str> = byte_array.split('\\').filter(|s| !s.is_empty()).collect();
+    let state_bytes: Vec<u8> = hex_values
+        .iter()
+        .map(|hex| u8::from_str_radix(hex, 16).expect("Invalid hex value"))
+        .collect();
+
+    let state = ciborium::de::from_reader(&*state_bytes).expect("failed to decode state");
+    DB.with(|s| *s.borrow_mut() = state);
+
+    Ok(())
+}
+
+#[query]
+#[check_authorization]
+fn export() -> Result<Vec<u8>, Error> {
+    let mut state_bytes = vec![];
+    DB.with(|s| ciborium::ser::into_writer(&*s.borrow(), &mut state_bytes))
+        .expect("failed to encode state");
+    Ok(state_bytes)
 }
 
 #[pre_upgrade]

@@ -1,21 +1,25 @@
 type Error = variant {
+  MemoryError;
   UniqueViolation;
   DimensionMismatch;
   NotFound;
   Unauthorized;
 };
 type Result = variant { Ok; Err : Error };
-type Result_1 = variant { Ok : vec principal; Err : Error };
-type Result_2 = variant { Ok : vec text; Err : Error };
+type Result_1 = variant { Ok : vec nat8; Err : Error };
+type Result_2 = variant { Ok : vec principal; Err : Error };
+type Result_3 = variant { Ok : vec text; Err : Error };
 service : (principal) -> {
   add_admin : (principal) -> (Result);
   build_index : (text) -> (Result);
   create_collection : (text, nat64) -> (Result);
   delete_collection : (text) -> (Result);
-  get_admins : () -> (Result_1) query;
-  get_collections : () -> (Result_2) query;
-  get_docs : (text) -> (Result_2) query;
+  export : () -> (Result_1) query;
+  get_admins : () -> (Result_2) query;
+  get_collections : () -> (Result_3) query;
+  get_docs : (text) -> (Result_3) query;
+  "import" : (text) -> (Result);
   insert : (text, vec vec float32, vec text, text) -> (Result);
-  "query" : (text, vec float32, int32) -> (Result_2) query;
+  "query" : (text, vec float32, int32) -> (Result_3) query;
   remove_admin : (principal) -> (Result);
 }

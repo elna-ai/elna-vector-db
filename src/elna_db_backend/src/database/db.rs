@@ -47,15 +47,15 @@ impl Database {
         }
     }
 
-    pub fn create_collection(&mut self, name: String, dimension: usize) -> Result<(), Error> {
-        if self.collections.contains_key(&name) {
+    pub fn create_collection(&mut self, name: &String, dimension: usize) -> Result<(), Error> {
+        if self.collections.contains_key(name) {
             return Err(Error::UniqueViolation);
         }
         let keys: Vec<Vector> = vec![];
         let values: Vec<String> = vec![];
 
         let collection: Collection = Collection::new(keys, values, dimension);
-        self.collections.insert(name, collection);
+        self.collections.insert(name.to_string(), collection);
         Ok(())
     }
 
@@ -157,15 +157,15 @@ mod tests {
     #[test]
     fn create_collection() {
         let mut db: Database = Database::new();
-        let result = db.create_collection("test".to_string(), 3);
+        let result = db.create_collection(&"test".to_string(), 3);
         assert!(result.is_ok())
     }
 
     #[test]
     fn create_duplicate_collection() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
-        let result = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
+        let result = db.create_collection(&"test".to_string(), 3);
         let expected = Err(Error::UniqueViolation);
         assert_eq!(result, expected);
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn delete_existing_collection() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
 
         assert_eq!(db.delete_collection(&"test".to_string()), Ok(()))
     }
@@ -191,7 +191,7 @@ mod tests {
     #[test]
     fn build_index() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
             vec![10.0, 11.0, 10.5],
@@ -211,7 +211,7 @@ mod tests {
     #[test]
     fn append_and_build_index() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
 
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn delete_collection_with_embeddings() {
         let mut db: Database = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
             vec![10.0, 11.0, 10.5],
@@ -263,7 +263,7 @@ mod tests {
     fn insert_into_collection_dimensions_mismatch_keys_values() {
         let mut db: Database = Database::new();
 
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
 
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
@@ -285,7 +285,7 @@ mod tests {
     fn insert_into_collection_dimensions_mismatch_keys() {
         let mut db: Database = Database::new();
 
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
 
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
@@ -307,7 +307,7 @@ mod tests {
     fn insert_into_collection_dimensions_mismatch() {
         let mut db: Database = Database::new();
 
-        let _ = db.create_collection("test".to_string(), 4);
+        let _ = db.create_collection(&"test".to_string(), 4);
 
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
@@ -349,7 +349,7 @@ mod tests {
     #[test]
     fn query() {
         let mut db = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
             vec![10.0, 11.0, 10.5],
@@ -373,7 +373,7 @@ mod tests {
     #[test]
     fn query_with_append() {
         let mut db = Database::new();
-        let _ = db.create_collection("test".to_string(), 3);
+        let _ = db.create_collection(&"test".to_string(), 3);
         let keys: Vec<Vec<f32>> = vec![
             vec![10.0, 12.0, 4.5],
             vec![10.0, 11.0, 10.5],

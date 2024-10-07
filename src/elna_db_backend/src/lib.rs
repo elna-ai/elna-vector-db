@@ -17,7 +17,24 @@ use ic_stable_structures::Memory as _;
 fn create_collection(name: String, dimension: usize) -> Result<(), Error> {
     DB.with(|db| {
         let mut db = db.borrow_mut();
-        db.create_collection(name, dimension)
+        db.create_collection(&name, dimension)
+    })
+}
+
+#[update]
+#[check_authorization]
+fn create_index(
+    name: String,
+    dimension: usize,
+    docs: Vec<String>,
+    embeddings: Vec<Vec<f32>>,
+    file_name: String,
+) -> Result<(), Error> {
+    DB.with(|db| {
+        let mut db = db.borrow_mut();
+        db.create_collection(&name, dimension);
+        db.insert_into_collection(&name, embeddings, docs, file_name);
+        db.build_index(&name)
     })
 }
 

@@ -1,4 +1,5 @@
 type Error = variant {
+  MemoryError;
   UniqueViolation;
   DimensionMismatch;
   NotFound;
@@ -11,6 +12,7 @@ service : (principal) -> {
   add_admin : (principal) -> (Result);
   build_index : (text) -> (Result);
   create_collection : (text, nat64) -> (Result);
+  create_index : (text, nat64, vec text, vec vec float32, text) -> (Result);
   delete_collection : (text) -> (Result);
   get_admins : () -> (Result_1) query;
   get_collections : () -> (Result_2) query;
